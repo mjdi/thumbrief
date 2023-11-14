@@ -1,0 +1,14 @@
+<resources>
+    <!-- Title for Latin keyboard  -->
+    <string name="app_name">Thumbrief Keyboard</string>
+    <string name="ime_label">Thumbrief ime</string>
+    <string name="ime_settings_label">Thumbrief settings</string>
+
+    <!-- Labels for subtype -->
+    <string name="label_subtype_generic">%s</string>
+    <string name="label_subtype_en_GB">English (GB)</string>
+
+    <!-- Titles for ImePreferences -->
+    <string name="settings_name">Thumbrief Keyboard Settings</string>
+    <string name="language_selection_title">Input language</string>
+</resources>
