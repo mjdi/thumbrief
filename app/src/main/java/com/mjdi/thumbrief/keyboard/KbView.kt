@@ -1,15 +1,22 @@
 package com.mjdi.thumbrief.keyboard
 
 import android.content.Context
+import android.graphics.Canvas
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import com.mjdi.thumbrief.common.Brushes
+import com.mjdi.thumbrief.common.Constants
 
-class KbView @JvmOverloads constructor(context: Context): View(context) {
+
+class KbView @JvmOverloads constructor(
+    context: Context,
+    ): View(context) {
 
     private lateinit var onKbActionListener: OnKbActionListener
-    var grid : KbGrid = KbGrid()
-    private var pIndexToGridTap: HashMap<Int, GridTap> = HashMap<Int, GridTap>()
+    private var grid : KbGrid = KbGrid()
+    private lateinit var gridTapResolver : GridTapResolver
+
 
     override fun onTouchEvent(me: MotionEvent): Boolean {
         var consumed = false // assume not consumed unless otherwise determined consumed;
@@ -24,38 +31,31 @@ class KbView @JvmOverloads constructor(context: Context): View(context) {
     }
 
     private fun motionEventGeneralActionDown(motionEvent: MotionEvent) : Boolean {
-        val pIndex: Int = motionEvent.action and MotionEvent.ACTION_POINTER_INDEX_MASK shr
-                MotionEvent.ACTION_POINTER_INDEX_SHIFT
-        val pIdentity: Int = motionEvent.getPointerId(pIndex)
-        val x = motionEvent.getX(pIndex).toDouble()
-        val y = motionEvent.getY(pIndex).toDouble()
-        var gridTap = grid.createGridTap(x,y)
-        pIndexToGridTap[pIdentity] = gridTap
-
-        return true
+        gridTapResolver.addGridTap(motionEvent)
+        return true // this lets the underlying app know that the touch was consumed by the ime
     }
 
     private fun motionEventActionMove(motionEvent: MotionEvent) {
-
+        gridTapResolver.moveGridTap(motionEvent)
     }
 
     private fun motionEventGeneralActionUp(motionEvent: MotionEvent) {
-        val pIndex: Int = motionEvent.action and MotionEvent.ACTION_POINTER_INDEX_MASK shr
-                MotionEvent.ACTION_POINTER_INDEX_SHIFT
-        val pIdentity: Int = motionEvent.getPointerId(pIndex)
-
-        if (pIndexToGridTap.containsKey(pIdentity)) {
-            onKbActionListener.onKbAction(KbAction(KeyEvent.KEYCODE_1,0))
-        }
-        pIndexToGridTap.remove(pIndex)
+        gridTapResolver.liftGridTap(motionEvent)
     }
 
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        if (canvas != null) {
+            grid.drawGrid(canvas)
+        }
+    }
     interface OnKbActionListener {
         fun onKbAction(action: KbAction)
     }
 
     fun setKbActionListener(onKbActionListenerArg : OnKbActionListener) {
         onKbActionListener = onKbActionListenerArg
+        gridTapResolver = GridTapResolver(onKbActionListener, grid)
     }
 }
 
